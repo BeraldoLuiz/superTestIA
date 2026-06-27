@@ -72,6 +72,15 @@ Fixtures provide preconditions/typed data (e.g. fetch an id for a follow-up call
 - **Invalid data:** at least one test sending invalid values (wrong type, out-of-range, malformed/unknown identifier), asserting the actual outcome.
 - **Required-ness per field:** for each input, a variation that omits it and asserts whether it is required or optional — one explicit assertion per field.
 
+## Code generators (sub-agents)
+
+Curl-driven scaffolders in `.claude/agents/` generate a complete, layered resource (schema → route → fixture → contract + functional specs) from a single `curl`, following all rules above. Each requires the matching curl (asks if missing), probes the live API before asserting, and runs `pnpm typecheck && pnpm lint && pnpm test:<name>` before reporting. Invoke via the `Agent` tool.
+
+- **`pokeGet`** — read-only GET resources. Safe against PokeAPI. Full matrix: contract, happy 2xx, invalid data, per-field required-ness.
+- **`pokePost`** / **`pokePut`** / **`pokeDelete`** — mutation resources (create / update / remove). They follow the POST/PUT standard above (assert status + response message + follow-up GET to confirm persistence; for delete, the follow-up GET confirms the resource is gone), build payloads with faker, and clean up created data.
+
+**Mutation agents enforce the Safety rule below via a hard gate:** before generating anything they confirm `BASE_URL` points at a mutable, non-production, authorized **test** API, and **refuse** if the target is PokeAPI or any read-only/production host. With the current PokeAPI config they will correctly refuse — they're ready for when a writable test API is configured.
+
 ## Safety
 
 - **Never commit secrets or `.env`.** Only `.env.example` is tracked.
