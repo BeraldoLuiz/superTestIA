@@ -59,7 +59,13 @@ tests  ──▶  fixtures  ──▶  routes  ──▶  HTTP (SuperTest)
 
 Treat the GET inputs (path identifier + each query parameter) as the fields under test. Always assert the **real, observed** behaviour — probe with curl first; this API is lenient and may ignore invalid params instead of returning 4xx.
 
-**Every test asserts the HTTP status code.** Functional tests assert it explicitly via `expect(res.status).toBe(...)` on the route `Response` (then parse the body with the schema for typed data). Contract tests assert it through `assertContract`. No test may rely solely on a fixture's internal check for status — fixtures provide preconditions/typed data, the test still asserts the status of the call under test.
+**Every test asserts the HTTP status code.** Beyond that, the verifications depend on the method:
+
+- **GET → 2xx:** assert the status **and** validate the body schema. Use `assertContract(schema, res)` — it does both in one call (asserts the status, validates the body via Zod) and returns typed data. Every 2xx GET response, in any test category, goes through it.
+- **GET → non-2xx (e.g. 404):** assert the status explicitly with `expect(res.status).toBe(...)`. Error bodies have no resource schema, so no schema check.
+- **POST / PUT** (only when a mutable API is configured — never against PokeAPI, which is read-only): assert the status code, assert the **message returned in the response body**, and on the happy path issue a follow-up **GET to confirm the change was actually persisted**.
+
+Fixtures provide preconditions/typed data (e.g. fetch an id for a follow-up call); the test still asserts the status of the call under test — never rely solely on a fixture's internal check.
 
 - **Contract (shape):** validate the 2xx response against the Zod schema via `assertContract`. The schema enforces each response field's obligation — required fields declared, optional/nullable marked as such from observed data.
 - **Happy path (2xx):** several valid variations, including at least one test that passes **all** parameters with valid values.

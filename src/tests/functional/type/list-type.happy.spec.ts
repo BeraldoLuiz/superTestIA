@@ -1,3 +1,4 @@
+import { assertContract } from '@api/assert-contract';
 import { listTypes } from '@api/routes/type';
 import { typeListSchema } from '@api/schemas/type.schema';
 
@@ -5,8 +6,7 @@ describe('[FUNCTIONAL][TYPE] GET /type (pagination)', () => {
   it('respects the limit parameter', async () => {
     const res = await listTypes({ limit: 5 });
 
-    expect(res.status).toBe(200);
-    const page = typeListSchema.parse(res.body);
+    const page = assertContract(typeListSchema, res);
     expect(page.results).toHaveLength(5);
     expect(page.count).toBeGreaterThan(5);
   });
@@ -17,10 +17,8 @@ describe('[FUNCTIONAL][TYPE] GET /type (pagination)', () => {
     const firstRes = await listTypes({ limit: 5, offset: 0 });
     const secondRes = await listTypes({ limit: 5, offset: 5 });
 
-    expect(firstRes.status).toBe(200);
-    expect(secondRes.status).toBe(200);
-    const first = typeListSchema.parse(firstRes.body);
-    const second = typeListSchema.parse(secondRes.body);
+    const first = assertContract(typeListSchema, firstRes);
+    const second = assertContract(typeListSchema, secondRes);
 
     expect(first.results).toHaveLength(5);
     expect(second.results).toHaveLength(5);

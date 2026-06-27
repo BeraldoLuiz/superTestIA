@@ -56,7 +56,12 @@ Add a `"test:<name>": "jest <name> --passWithNoTests"` script to `package.json` 
 
 Treat the GET inputs (path identifier + each query parameter) as the fields under test. Pick stable, real assertion values verified against the live response — never guess ids/names.
 
-**MANDATORY — every single test asserts the HTTP status code.** Functional tests do it explicitly: `const res = await <route>(...); expect(res.status).toBe(<observed>);` and then parse the body with the schema (`<name>DetailSchema.parse(res.body)`) for typed assertions. Contract tests assert status through `assertContract`. A fixture may supply a precondition or the id for a follow-up call, but the test must still assert the status of the call under test — never rely only on a fixture's internal status check.
+**MANDATORY — every test asserts the status code; every 2xx GET also validates the schema.**
+- For a **2xx GET** (in ANY category — happy, leniency, optional-field, etc.): `const res = await <route>(...); const data = assertContract(<name>Schema, res);` then assert on the typed `data`. `assertContract` asserts the status AND validates the body schema in one call.
+- For a **non-2xx GET** (e.g. 404): assert the status explicitly with `expect(res.status).toBe(<observed>)` — error bodies have no resource schema.
+- A fixture may supply a precondition or an id for a follow-up call, but the test must still assert the status of the call under test — never rely only on a fixture's internal status check.
+
+(pokeGet only scaffolds GET resources. The POST/PUT standard — assert status + response message + a follow-up GET to confirm persistence — is documented in `CLAUDE.md` for when a mutable API is configured.)
 
 **A. Contract / shape — `tests/contract/<name>/`**
 - Validate the 2xx response against the Zod schema via `assertContract`.
