@@ -62,7 +62,7 @@ Treat the GET inputs (path identifier + each query parameter) as the fields unde
 **Every test asserts the HTTP status code.** Beyond that, the verifications depend on the method:
 
 - **GET → 2xx:** assert the status **and** validate the body schema. Use `assertContract(schema, res)` — it does both in one call (asserts the status, validates the body via Zod) and returns typed data. Every 2xx GET response, in any test category, goes through it.
-- **GET → non-2xx (e.g. 404):** assert the status explicitly with `expect(res.status).toBe(...)`. Error bodies have no resource schema, so no schema check.
+- **GET → 4xx / non-2xx (e.g. 404):** assert the status explicitly with `expect(res.status).toBe(...)` **and** assert the response body. PokeAPI errors are `text/plain`, so the body is in `res.text` (e.g. `expect(res.text).toBe('Not Found')`); a JSON error API would assert `res.body`. Probe the real error body first — never assume its shape.
 - **POST / PUT** (only when a mutable API is configured — never against PokeAPI, which is read-only): assert the status code, assert the **message returned in the response body**, and on the happy path issue a follow-up **GET to confirm the change was actually persisted**.
 
 Fixtures provide preconditions/typed data (e.g. fetch an id for a follow-up call); the test still asserts the status of the call under test — never rely solely on a fixture's internal check.

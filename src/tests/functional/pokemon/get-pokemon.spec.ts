@@ -25,5 +25,7 @@ describe('[FUNCTIONAL][POKEMON] GET /pokemon/{name|id}', () => {
     const res = await getPokemonByName('not-a-real-pokemon');
 
     expect(res.status).toBe(404);
+    // PokeAPI errors are text/plain, so the body lands in `res.text`.
+    expect(res.text).toBe('Not Found');
   });
 });

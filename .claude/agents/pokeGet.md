@@ -58,7 +58,7 @@ Treat the GET inputs (path identifier + each query parameter) as the fields unde
 
 **MANDATORY — every test asserts the status code; every 2xx GET also validates the schema.**
 - For a **2xx GET** (in ANY category — happy, leniency, optional-field, etc.): `const res = await <route>(...); const data = assertContract(<name>Schema, res);` then assert on the typed `data`. `assertContract` asserts the status AND validates the body schema in one call.
-- For a **non-2xx GET** (e.g. 404): assert the status explicitly with `expect(res.status).toBe(<observed>)` — error bodies have no resource schema.
+- For a **4xx / non-2xx GET** (e.g. 404): assert the status explicitly with `expect(res.status).toBe(<observed>)` AND assert the response body you probed. PokeAPI errors are `text/plain`, so assert `res.text` (e.g. `expect(res.text).toBe('Not Found')`); a JSON error API would assert `res.body`. Never assume the error body — curl it first.
 - A fixture may supply a precondition or an id for a follow-up call, but the test must still assert the status of the call under test — never rely only on a fixture's internal status check.
 
 (pokeGet only scaffolds GET resources. The POST/PUT standard — assert status + response message + a follow-up GET to confirm persistence — is documented in `CLAUDE.md` for when a mutable API is configured.)

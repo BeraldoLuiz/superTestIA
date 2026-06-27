@@ -7,18 +7,22 @@ describe('[FUNCTIONAL][TYPE] invalid data', () => {
     const res = await getTypeByName('not-a-real-type');
 
     expect(res.status).toBe(404);
+    // PokeAPI errors are text/plain, so the body lands in `res.text`.
+    expect(res.text).toBe('Not Found');
   });
 
   it('returns 404 for an out-of-range numeric id', async () => {
     const res = await getTypeByName(99999);
 
     expect(res.status).toBe(404);
+    expect(res.text).toBe('Not Found');
   });
 
   it('returns 404 for a non-positive id (0)', async () => {
     const res = await getTypeByName(0);
 
     expect(res.status).toBe(404);
+    expect(res.text).toBe('Not Found');
   });
 
   it('ignores a non-numeric limit and falls back to the default page (lenient API)', async () => {
