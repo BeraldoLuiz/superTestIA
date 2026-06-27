@@ -1,2 +1,2 @@
-// Carrega variáveis de ambiente antes de qualquer teste rodar.
+// Load environment variables before any test runs.
 require('dotenv').config();

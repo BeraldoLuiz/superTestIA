@@ -1,7 +1,7 @@
 {
   "name": "supertestia",
   "version": "1.0.0",
-  "description": "Testes de API externa com SuperTest + Jest",
+  "description": "External API testing with SuperTest + Jest",
   "type": "commonjs",
   "packageManager": "pnpm@11.1.2",
   "scripts": {

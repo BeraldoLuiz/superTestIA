@@ -4,5 +4,5 @@ module.exports = {
   testMatch: ['**/tests/**/*.test.js'],
   setupFiles: ['<rootDir>/tests/setup.js'],
   verbose: true,
-  testTimeout: 30000,
+  testTimeout: 30000, // 30s — external network calls
 };

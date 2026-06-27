@@ -1,44 +1,44 @@
 # superTestIA
 
-Testes de API externa com [SuperTest](https://github.com/ladjs/supertest) + [Jest](https://jestjs.io/).
+External API testing with [SuperTest](https://github.com/ladjs/supertest) + [Jest](https://jestjs.io/).
 
-Os testes apontam para uma API já em execução através de uma `BASE_URL` configurável por variável de ambiente — não há código de servidor neste repositório.
+The tests run against an already-running API through a configurable `BASE_URL` environment variable — there is no server code in this repository.
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env   # ajuste a BASE_URL para a API que deseja testar
+cp .env.example .env   # set BASE_URL to the API you want to test
 ```
 
-## Rodando os testes
+## Running the tests
 
 ```bash
-pnpm test           # roda todos os testes uma vez
-pnpm test:watch     # modo watch
-pnpm test:ci        # modo CI (serial)
+pnpm test           # run all tests once
+pnpm test:watch     # watch mode
+pnpm test:ci        # CI mode (serial)
 ```
 
-## Estrutura
+## Structure
 
 ```
 tests/
   helpers/
-    client.js      # instância do SuperTest apontando para BASE_URL
-  setup.js         # carrega o .env antes dos testes
-  posts.test.js    # testes de exemplo (JSONPlaceholder)
-.env.example       # template de variáveis de ambiente
-jest.config.js     # configuração do Jest
+    client.js      # SuperTest instance pointing to BASE_URL
+  setup.js         # loads .env before tests
+  posts.test.js    # example tests (JSONPlaceholder)
+.env.example       # environment variables template
+jest.config.js     # Jest configuration
 ```
 
-## Escrevendo novos testes
+## Writing new tests
 
-Importe o cliente já configurado e use a API do SuperTest:
+Import the pre-configured client and use the SuperTest API:
 
 ```js
 const { request } = require('./helpers/client');
 
-it('exemplo', async () => {
+it('example', async () => {
   const res = await request.get('/endpoint');
   expect(res.status).toBe(200);
 });

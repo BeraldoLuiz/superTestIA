@@ -1,9 +1,9 @@
 const { request } = require('./helpers/client');
 
-// Testes de exemplo contra a API JSONPlaceholder.
-// Defina BASE_URL=https://jsonplaceholder.typicode.com no .env para rodá-los.
+// Example tests against the JSONPlaceholder API.
+// Set BASE_URL=https://jsonplaceholder.typicode.com in .env to run them.
 describe('GET /posts', () => {
-  it('retorna 200 e uma lista de posts', async () => {
+  it('returns 200 and a list of posts', async () => {
     const res = await request.get('/posts');
 
     expect(res.status).toBe(200);
@@ -11,7 +11,7 @@ describe('GET /posts', () => {
     expect(res.body.length).toBeGreaterThan(0);
   });
 
-  it('cada post tem os campos esperados', async () => {
+  it('each post has the expected fields', async () => {
     const res = await request.get('/posts/1');
 
     expect(res.status).toBe(200);
@@ -27,7 +27,7 @@ describe('GET /posts', () => {
 });
 
 describe('POST /posts', () => {
-  it('cria um post e retorna 201', async () => {
+  it('creates a post and returns 201', async () => {
     const payload = { title: 'foo', body: 'bar', userId: 1 };
 
     const res = await request
