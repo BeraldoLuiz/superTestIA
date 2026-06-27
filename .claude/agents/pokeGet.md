@@ -56,8 +56,15 @@ Add a `"test:<name>": "jest <name> --passWithNoTests"` script to `package.json` 
 
 Treat the GET inputs (path identifier + each query parameter) as the fields under test. Pick stable, real assertion values verified against the live response — never guess ids/names.
 
-**MANDATORY — every test asserts the status code; every 2xx GET also validates the schema.**
-- For a **2xx GET** (in ANY category — happy, leniency, optional-field, etc.): `const res = await <route>(...); const data = assertContract(<name>Schema, res);` then assert on the typed `data`. `assertContract` asserts the status AND validates the body schema in one call.
+**MANDATORY — every GET test contains an explicit `expect` on the status code. No exceptions.**
+- For a **2xx GET** (in ANY category — happy, leniency, optional-field, etc.): assert the status **explicitly and visibly** with `expect(res.status).toBe(200)` (use the observed 2xx code), THEN validate the body with `assertContract`:
+  ```ts
+  const res = await <route>(...);
+  expect(res.status).toBe(200);
+  const data = assertContract(<name>Schema, res);
+  // ...assert on the typed `data`
+  ```
+  `assertContract` also checks the status internally, but the explicit `expect(res.status)` line is **required in every test** so the status assertion is obvious on the face of the test — never rely on `assertContract` alone to satisfy it.
 - For a **4xx / non-2xx GET** (e.g. 404): assert the status explicitly with `expect(res.status).toBe(<observed>)` AND assert the response body you probed. PokeAPI errors are `text/plain`, so assert `res.text` (e.g. `expect(res.text).toBe('Not Found')`); a JSON error API would assert `res.body`. Never assume the error body — curl it first.
 - A fixture may supply a precondition or an id for a follow-up call, but the test must still assert the status of the call under test — never rely only on a fixture's internal status check.
 
@@ -77,7 +84,13 @@ Treat the GET inputs (path identifier + each query parameter) as the fields unde
 **D. Required-ness of each field — variations per input**
 - For **each** input field/parameter, add a variation that **omits** it and asserts whether the request still succeeds (optional) or fails (required) — one explicit assertion per field, documenting its obligation. Derive each field's obligation from the curl probes in Step 2, not from assumption.
 
-Prefix `describe` blocks with tags: `[CONTRACT][<NAME>]` and `[FUNCTIONAL][<NAME>]`. Organise specs by endpoint and/or by matrix category (e.g. `list-<name>.happy.spec.ts`, `<name>.invalid.spec.ts`, `<name>.required.spec.ts`) — whichever reads cleanest, as long as all of A–D exist.
+Prefix `describe` blocks with tags: `[CONTRACT][<NAME>]` and `[FUNCTIONAL][<NAME>]`.
+
+**MANDATORY — one test file per curl, split ONLY by contract vs functional.** For each curl provided, generate exactly **two** spec files and no more — the only allowed split is the contract/functional dimension:
+- **one contract spec** in `src/tests/contract/<name>/` — holds matrix category **A** (shape) for that curl.
+- **one functional spec** in `src/tests/functional/<name>/` — holds matrix categories **B, C, and D** (happy, invalid, required-ness) for that curl, grouped with nested `describe`/`it` blocks inside the single file.
+
+Do **not** split a curl's functional tests across multiple files (no separate `.happy`/`.invalid`/`.required` files). Name the pair after the endpoint of the curl, e.g. a detail curl → `<name>.spec.ts`; a list curl → `list-<name>.spec.ts`. If the user provides N curls (e.g. detail + list), produce N such pairs — one contract + one functional file each.
 
 ## Step 5 — Verify
 
