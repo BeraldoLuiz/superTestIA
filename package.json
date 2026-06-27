@@ -1,0 +1,27 @@
+{
+  "name": "supertestia",
+  "version": "1.0.0",
+  "description": "Testes de API externa com SuperTest + Jest",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --runInBand"
+  },
+  "keywords": [
+    "supertest",
+    "jest",
+    "api",
+    "e2e",
+    "testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
