@@ -59,6 +59,8 @@ tests  ──▶  fixtures  ──▶  routes  ──▶  HTTP (SuperTest)
 
 Treat the GET inputs (path identifier + each query parameter) as the fields under test. Always assert the **real, observed** behaviour — probe with curl first; this API is lenient and may ignore invalid params instead of returning 4xx.
 
+**Every test asserts the HTTP status code.** Functional tests assert it explicitly via `expect(res.status).toBe(...)` on the route `Response` (then parse the body with the schema for typed data). Contract tests assert it through `assertContract`. No test may rely solely on a fixture's internal check for status — fixtures provide preconditions/typed data, the test still asserts the status of the call under test.
+
 - **Contract (shape):** validate the 2xx response against the Zod schema via `assertContract`. The schema enforces each response field's obligation — required fields declared, optional/nullable marked as such from observed data.
 - **Happy path (2xx):** several valid variations, including at least one test that passes **all** parameters with valid values.
 - **Invalid data:** at least one test sending invalid values (wrong type, out-of-range, malformed/unknown identifier), asserting the actual outcome.

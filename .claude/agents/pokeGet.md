@@ -56,6 +56,8 @@ Add a `"test:<name>": "jest <name> --passWithNoTests"` script to `package.json` 
 
 Treat the GET inputs (path identifier + each query parameter) as the fields under test. Pick stable, real assertion values verified against the live response — never guess ids/names.
 
+**MANDATORY — every single test asserts the HTTP status code.** Functional tests do it explicitly: `const res = await <route>(...); expect(res.status).toBe(<observed>);` and then parse the body with the schema (`<name>DetailSchema.parse(res.body)`) for typed assertions. Contract tests assert status through `assertContract`. A fixture may supply a precondition or the id for a follow-up call, but the test must still assert the status of the call under test — never rely only on a fixture's internal status check.
+
 **A. Contract / shape — `tests/contract/<name>/`**
 - Validate the 2xx response against the Zod schema via `assertContract`.
 - The schema is how **response-field obligation** is enforced: every required field is declared, so a missing one makes the contract test fail. Optional/nullable fields must be marked as such based on observed data.
