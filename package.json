@@ -12,6 +12,7 @@
     "test:contract": "jest tests/contract --passWithNoTests",
     "test:pokemon": "jest pokemon --passWithNoTests",
     "test:type": "jest type --passWithNoTests",
+    "test:ability": "jest ability --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
