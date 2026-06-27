@@ -10,6 +10,7 @@
     "test:ci": "jest --ci --runInBand --passWithNoTests",
     "test:functional": "jest tests/functional --passWithNoTests",
     "test:contract": "jest tests/contract --passWithNoTests",
+    "test:pokemon": "jest pokemon --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
