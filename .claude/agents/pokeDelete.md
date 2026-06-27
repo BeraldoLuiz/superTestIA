@@ -41,6 +41,14 @@ Before writing anything:
    - `src/api/schemas/pokemon.schema.ts`, `src/api/routes/pokemon.ts`, `src/support/fixtures/pokemon.ts`
    - `src/api/assert-contract.ts`, `src/support/http-client.ts`, `src/api/schemas/api-response.schema.ts`.
 
+## Step 1.5 — Prerequisites (deps, auth, confirmation GET)
+
+Before generating, make sure the tests can actually run — these are common reasons a mutation spec fails to compile or run:
+
+1. **faker** — the precondition `create<Name>()` builds payloads with `@faker-js/faker` for unique values. If it isn't in `package.json`, install it: `pnpm add -D @faker-js/faker`. Never leave an unresolved `faker` import that breaks `pnpm typecheck`/`lint`; if a new dep is undesired, generate unique values another way (e.g. a counter) instead.
+2. **Auth** — if the curl carries an `Authorization` (or other auth) header, the shared client doesn't have those credentials. Add the token as a new variable in `src/config/env.ts` and `.env.example` (e.g. `AUTH_TOKEN`), read it via `env`, and inject it per-request in the route with `.set('Authorization', ...)`. Never hardcode the token and never commit `.env`.
+3. **Confirmation GET** — the happy path proves the record is gone with a follow-up GET (expecting 404), and the precondition `create<Name>()` needs a GET to read back the id it created. If the resource has no GET route/schema yet, create a minimal one (mirroring `routes/pokemon.ts` + `schemas/pokemon.schema.ts`) or scaffold it first with `pokeGet`. The spec must compile and the confirmation GET must be real, not a stub.
+
 ## Step 2 — Inspect the real behaviour (empirically)
 
 Run the provided curl with `Bash` against the configured test API. Derive:
@@ -90,7 +98,7 @@ The DELETE standard (the mutation analogue of the POST/PUT rule in `CLAUDE.md`):
 - **4xx / non-2xx** (e.g. unknown id → 404): assert the status explicitly AND assert the probed response body (`res.body` for JSON, `res.text` for text/plain). Never assume the error body.
 
 **A. Contract / shape — `tests/contract/<name>/`**
-- For a `200` delete: validate the response body against the Zod response schema via `assertContract`. For a `204` delete: assert the status and the empty body (document that there is no JSON contract to validate).
+- For a `200` delete: validate the response body against the Zod response schema via `assertContract`, passing the observed status if it isn't `200`. For a `204` delete: assert the status and the empty body (document that there is no JSON contract to validate).
 
 **B. Happy path, 2xx — `tests/functional/<name>/`**
 - Delete a freshly created record, asserting status + body/message + a follow-up GET confirming a 404 (gone).
@@ -100,7 +108,8 @@ The DELETE standard (the mutation analogue of the POST/PUT rule in `CLAUDE.md`):
 - Delete an unknown id and a malformed id. Assert the **real observed** outcome (e.g. 404).
 
 **D. Required-ness of the id — variation**
-- The path id is the sole required input. Add a variation hitting the collection path without an id (e.g. `DELETE /<resource>`) and assert the actual outcome (404/405 — whatever the API returns), documenting the id's obligation.
+- The path id is the sole required input. Document its obligation by asserting the outcome of an **empty/malformed id on the detail path** (e.g. `DELETE /<resource>/` or `/<resource>/not-an-id`).
+- ⚠️ **Do NOT blindly fire `DELETE /<resource>` (collection, no id)** to "prove" the id is required — on some APIs that is a *delete-all* operation. Only add that variation if you have confirmed (docs or a safe probe) it is non-destructive; otherwise rely on the detail-path variation above and note the risk in the report.
 
 Prefix `describe` blocks with tags: `[CONTRACT][<NAME>]` and `[FUNCTIONAL][<NAME>]`.
 

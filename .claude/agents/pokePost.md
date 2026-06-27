@@ -47,6 +47,14 @@ Before writing anything:
    - `src/api/assert-contract.ts`, `src/support/http-client.ts`
    - `src/api/schemas/api-response.schema.ts` (reuse `namedApiResource` / `paginatedResponse` where shapes match).
 
+## Step 1.5 — Prerequisites (deps, auth, confirmation GET)
+
+Before generating, make sure the tests can actually run — these are common reasons a mutation spec fails to compile or run:
+
+1. **faker** — payloads use `@faker-js/faker` for unique values. If it isn't in `package.json`, install it: `pnpm add -D @faker-js/faker`. Never leave an unresolved `faker` import that breaks `pnpm typecheck`/`lint`; if a new dep is undesired, generate unique values another way (e.g. a counter) instead.
+2. **Auth** — if the curl carries an `Authorization` (or other auth) header, the shared client doesn't have those credentials. Add the token as a new variable in `src/config/env.ts` and `.env.example` (e.g. `AUTH_TOKEN`), read it via `env`, and inject it per-request in the route with `.set('Authorization', ...)`. Never hardcode the token and never commit `.env`.
+3. **Confirmation GET** — the happy path confirms persistence with a follow-up GET (`get<Name>()` + a detail schema). If the resource has no GET route/schema yet, create a minimal one (mirroring `routes/pokemon.ts` + `schemas/pokemon.schema.ts`) or scaffold it first with `pokeGet`. The spec must compile and the confirmation GET must be real, not a stub.
+
 ## Step 2 — Inspect the real behaviour (empirically)
 
 Run the provided curl with `Bash` against the configured test API. Derive:
@@ -96,7 +104,7 @@ Per `CLAUDE.md`, the POST standard is: **assert the status code, assert the mess
 - **4xx / non-2xx:** assert the status explicitly with `expect(res.status).toBe(<observed>)` AND assert the response body you probed (`res.body` for a JSON API, `res.text` for a text/plain error). Never assume the error body — curl it first.
 
 **A. Contract / shape — `tests/contract/<name>/`**
-- Validate the create response against the Zod response schema via `assertContract`.
+- Validate the create response against the Zod response schema via `assertContract`. **Pass the observed create status** (e.g. `assertContract(schema, res, 201)`) — `assertContract` defaults to `200` and would otherwise fail a `201 Created`.
 
 **B. Happy path, 2xx — `tests/functional/<name>/`**
 - Several valid create variations, each asserting status + response message + a follow-up GET confirming persistence.

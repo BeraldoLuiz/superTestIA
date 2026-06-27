@@ -41,6 +41,14 @@ Before writing anything:
    - `src/api/schemas/pokemon.schema.ts`, `src/api/routes/pokemon.ts`, `src/support/fixtures/pokemon.ts`
    - `src/api/assert-contract.ts`, `src/support/http-client.ts`, `src/api/schemas/api-response.schema.ts`.
 
+## Step 1.5 — Prerequisites (deps, auth, confirmation GET)
+
+Before generating, make sure the tests can actually run — these are common reasons a mutation spec fails to compile or run:
+
+1. **faker** — payloads use `@faker-js/faker` for unique values. If it isn't in `package.json`, install it: `pnpm add -D @faker-js/faker`. Never leave an unresolved `faker` import that breaks `pnpm typecheck`/`lint`; if a new dep is undesired, generate unique values another way (e.g. a counter) instead.
+2. **Auth** — if the curl carries an `Authorization` (or other auth) header, the shared client doesn't have those credentials. Add the token as a new variable in `src/config/env.ts` and `.env.example` (e.g. `AUTH_TOKEN`), read it via `env`, and inject it per-request in the route with `.set('Authorization', ...)`. Never hardcode the token and never commit `.env`.
+3. **Confirmation GET** — the happy path confirms the change with a follow-up GET (`get<Name>()` + a detail schema), and the precondition `create<Name>()` also needs a way to read back its id. If the resource has no GET route/schema yet, create a minimal one (mirroring `routes/pokemon.ts` + `schemas/pokemon.schema.ts`) or scaffold it first with `pokeGet`. The spec must compile and the confirmation GET must be real, not a stub.
+
 ## Step 2 — Inspect the real behaviour (empirically)
 
 Run the provided curl with `Bash` against the configured test API. Derive:
@@ -91,7 +99,7 @@ Per `CLAUDE.md`, the PUT standard is: **assert the status code, assert the messa
 - **4xx / non-2xx** (e.g. unknown id → 404): assert the status explicitly AND assert the probed response body (`res.body` for JSON, `res.text` for text/plain). Never assume the error body.
 
 **A. Contract / shape — `tests/contract/<name>/`**
-- Validate the update response against the Zod response schema via `assertContract`.
+- Validate the update response against the Zod response schema via `assertContract`. Pass the observed status if the update isn't `200` (`assertContract` defaults to `200`). For a `204 No Content` update there is no JSON contract — assert the status and empty body instead.
 
 **B. Happy path, 2xx — `tests/functional/<name>/`**
 - Several valid update variations, each asserting status + response message + a follow-up GET confirming the value changed.
