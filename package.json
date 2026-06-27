@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Testes de API externa com SuperTest + Jest",
   "type": "commonjs",
+  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",

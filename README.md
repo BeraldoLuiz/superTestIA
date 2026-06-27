@@ -7,16 +7,16 @@ Os testes apontam para uma API já em execução através de uma `BASE_URL` conf
 ## Setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env   # ajuste a BASE_URL para a API que deseja testar
 ```
 
 ## Rodando os testes
 
 ```bash
-npm test           # roda todos os testes uma vez
-npm run test:watch # modo watch
-npm run test:ci    # modo CI (serial)
+pnpm test           # roda todos os testes uma vez
+pnpm test:watch     # modo watch
+pnpm test:ci        # modo CI (serial)
 ```
 
 ## Estrutura
