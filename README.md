@@ -1,45 +1,53 @@
 # superTestIA
 
-External API testing with [SuperTest](https://github.com/ladjs/supertest) + [Jest](https://jestjs.io/).
+A study project for learning **API test automation** with SuperTest + Jest + TypeScript + Zod, testing the public **[PokeAPI](https://pokeapi.co/)** (read-only, no auth).
 
-The tests run against an already-running API through a configurable `BASE_URL` environment variable — there is no server code in this repository.
+> Project conventions and guard rails live in [`CLAUDE.md`](./CLAUDE.md).
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env   # set BASE_URL to the API you want to test
+cp .env.example .env   # BASE_URL defaults to https://pokeapi.co/api/v2
 ```
 
-## Running the tests
+## Scripts
 
 ```bash
-pnpm test           # run all tests once
-pnpm test:watch     # watch mode
-pnpm test:ci        # CI mode (serial)
+pnpm test              # run all tests
+pnpm test:functional   # functional tests only
+pnpm test:contract     # contract tests only
+pnpm test:watch        # watch mode
+
+pnpm typecheck         # tsc --noEmit
+pnpm lint              # eslint
+pnpm format            # prettier --write
 ```
 
-## Structure
+## Architecture
 
 ```
-tests/
-  helpers/
-    client.js      # SuperTest instance pointing to BASE_URL
-  setup.js         # loads .env before tests
-  posts.test.js    # example tests (JSONPlaceholder)
-.env.example       # environment variables template
-jest.config.js     # Jest configuration
+src/
+  api/
+    assert-contract.ts   # validate status + body against a Zod schema
+    routes/              # HTTP abstractions (SuperTest), 1 file per resource
+    schemas/             # Zod schemas + derived types
+  support/
+    http-client.ts       # shared SuperTest agent
+    fixtures/            # build/read helpers that call routes
+  config/env.ts          # loads .env
+  setup/global-setup.ts  # pre-flight reachability check
+  tests/
+    functional/          # behaviour tests by resource
+    contract/            # shape/contract tests by resource
 ```
 
-## Writing new tests
+### Dependency direction (golden rule)
 
-Import the pre-configured client and use the SuperTest API:
-
-```js
-const { request } = require('./helpers/client');
-
-it('example', async () => {
-  const res = await request.get('/endpoint');
-  expect(res.status).toBe(200);
-});
 ```
+tests  ──▶  fixtures  ──▶  routes  ──▶  HTTP (SuperTest)
+   │                          ▲
+   └──────────▶  schemas ─────┘   (via assertContract)
+```
+
+Routes do HTTP and return the raw response; fixtures call routes and return typed data; tests validate via schemas. Never invert. See [`CLAUDE.md`](./CLAUDE.md) for the full rules.
