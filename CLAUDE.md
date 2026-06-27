@@ -55,6 +55,15 @@ tests  ──▶  fixtures  ──▶  routes  ──▶  HTTP (SuperTest)
 - Tests organized by resource folder. Prefix `describe` blocks with tags: `[FUNCTIONAL][POKEMON]`, `[CONTRACT][POKEMON]`.
 - Route functions are verbs: `getPokemonByName()`, `listPokemon()`.
 
+## Test design (every resource)
+
+Treat the GET inputs (path identifier + each query parameter) as the fields under test. Always assert the **real, observed** behaviour — probe with curl first; this API is lenient and may ignore invalid params instead of returning 4xx.
+
+- **Contract (shape):** validate the 2xx response against the Zod schema via `assertContract`. The schema enforces each response field's obligation — required fields declared, optional/nullable marked as such from observed data.
+- **Happy path (2xx):** several valid variations, including at least one test that passes **all** parameters with valid values.
+- **Invalid data:** at least one test sending invalid values (wrong type, out-of-range, malformed/unknown identifier), asserting the actual outcome.
+- **Required-ness per field:** for each input, a variation that omits it and asserts whether it is required or optional — one explicit assertion per field.
+
 ## Safety
 
 - **Never commit secrets or `.env`.** Only `.env.example` is tracked.
